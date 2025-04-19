@@ -27,20 +27,18 @@ def draw_grid(screen, grid, cell_size, font):
             text_rect = text.get_rect(center=(x + cell_size // 2, y + cell_size // 2))
             screen.blit(text, text_rect)
 
-def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size):
-    cols = grid_size
-    origin_x = (screen.get_width() - cols * cell_size) // 2
-    origin_y = 100 if cols <= 6 else 50
+def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, text_color=(0, 0, 0)):
+    x = 10
+    y = grid_size * cell_size + 10
+    line_height = 30
+    words_per_row = 3
 
-    # Calculate y-position just below the grid
-    y_offset = origin_y + grid_size * cell_size + 20
-    x_offset = origin_x
-
-    for word in all_words:
-        color = (0, 0, 0) if word in found_words else (255, 255, 255)
-        text = font.render(word, True, color)
-        screen.blit(text, (x_offset, y_offset))
-        x_offset += text.get_width() + 20
+    for index, word in enumerate(all_words):
+        color = (0, 200, 0) if word in found_words else text_color
+        word_text = font.render(word, True, color)
+        word_x = x + (index % words_per_row) * 180
+        word_y = y + (index // words_per_row) * line_height
+        screen.blit(word_text, (word_x, word_y))
 
 
 def get_cell_under_mouse(pos, cell_size, grid_size, screen):
@@ -57,7 +55,7 @@ def get_cell_under_mouse(pos, cell_size, grid_size, screen):
     return None  # Outside the grid
 
 def draw_lines(screen, found_lines, cell_size, grid_size):
-    ANIMATION_SPEED = 0.05  # Adjust for slower/faster animation
+    ANIMATION_SPEED = 0.05
 
     cols = grid_size
     origin_x = (screen.get_width() - cols * cell_size) // 2
@@ -67,43 +65,45 @@ def draw_lines(screen, found_lines, cell_size, grid_size):
         color = line['color']
         positions = line['positions']
         progress = line['progress']
+        opacity = line.get('opacity', 130)  # Slightly see-through like a highlighter
 
-        # Convert grid positions to screen coordinates with offset
-        pixel_points = [
-            (
-                origin_x + col * cell_size + cell_size // 2,
-                origin_y + row * cell_size + cell_size // 2
-            )
-            for row, col in positions
-        ]
+        # Create transparent surface for highlight
+        surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 
-        total_segments = len(pixel_points) - 1
-        if total_segments == 0:
-            continue  # nothing to draw
+        total = len(positions)
+        max_cells = int(progress * total)
 
-        segments_to_draw = int(progress * total_segments)
+        for idx in range(max_cells):
+            row, col = positions[idx]
+            x = origin_x + col * cell_size
+            y = origin_y + row * cell_size
 
-        # Draw fully completed segments
-        for i in range(segments_to_draw):
-            pygame.draw.line(screen, color, pixel_points[i], pixel_points[i+1], 4)
+            highlight_surface = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+            highlight_surface.fill((*color, opacity))
+            surface.blit(highlight_surface, (x, y))
 
-        # Draw partially-progressed segment
-        if segments_to_draw < total_segments:
-            start_pt = pixel_points[segments_to_draw]
-            end_pt = pixel_points[segments_to_draw + 1]
-            segment_progress = (progress * total_segments) - segments_to_draw
+        # Animate partially appearing cell
+        if max_cells < total:
+            row, col = positions[max_cells]
+            x = origin_x + col * cell_size
+            y = origin_y + row * cell_size
 
-            mid_x = int(start_pt[0] + (end_pt[0] - start_pt[0]) * segment_progress)
-            mid_y = int(start_pt[1] + (end_pt[1] - start_pt[1]) * segment_progress)
-            pygame.draw.line(screen, color, start_pt, (mid_x, mid_y), 4)
+            partial_surface = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+            partial_surface.fill((*color, int(opacity * (progress * total - max_cells))))
+            surface.blit(partial_surface, (x, y))
 
-        # Update animation progress
+        screen.blit(surface, (0, 0))
+
+        # Progress animation
         if line['progress'] < 1.0:
             line['progress'] = min(1.0, line['progress'] + ANIMATION_SPEED)
 
 def get_random_color():
     return random.choice([
-        (255, 0, 0), (0, 255, 0), (0, 0, 255),
-        (255, 165, 0), (128, 0, 128), (0, 255, 255),
-        (255, 105, 180), (255, 255, 0)
+        (255, 255, 0),   # Yellow
+        (0, 255, 255),   # Cyan
+        (255, 105, 180), # Pink
+        (144, 238, 144), # Light Green
+        (221, 160, 221), # Plum
     ])
+

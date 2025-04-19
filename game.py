@@ -8,11 +8,13 @@ class Game:
         self.words = set(words)
         self.found_words = set()
         self.turn = "Human"  # start with human
+        self.scores = {"human": 0, "ai": 0}
 
     def check_and_update_word(self, word, positions):
         if word in self.words and word not in self.found_words:
             self.found_words.add(word)
             self.grid_manager.reshuffle(positions, word)
+            self.scores["human"] +=1
             return True
         return False
 
@@ -23,8 +25,12 @@ class Game:
             if path:
                 self.found_words.add(word)
                 self.grid_manager.reshuffle(set(path), word)
+                self.scores["ai"] +=1
                 return word, path
         return None, None
+
+    def get_score(self, player):
+        return self.scores.get(player.lower(), 0)
 
     def is_game_over(self):
         return self.words == self.found_words
