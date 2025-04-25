@@ -1,5 +1,6 @@
 import random
 import string
+# from game import Game
 
 class GridManager:
     def __init__(self, size, words):
@@ -51,6 +52,7 @@ class GridManager:
                     self.grid[r][c] = random.choice(string.ascii_uppercase)
 
     def reshuffle(self, found_positions, found_word):
+    #   if Game.mode =="Grid Shuffle":
         # NEW: Update all-time found positions
         self.found_positions.update(found_positions)
 

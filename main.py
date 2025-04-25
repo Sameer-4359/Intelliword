@@ -118,7 +118,7 @@ def run_game():
         # AI Move
         # AI Move (only in non-Word Bomb modes)
         now = pygame.time.get_ticks()
-        if not game_completed and game.mode != "Word Bomb" and now - ai_timer > ai_delay:
+        if not game_completed and game.mode == "Grid Shuffle" and now - ai_timer > ai_delay:
             ai_word, ai_path = game.ai_turn()
             ai_timer = now
             if ai_word:
@@ -147,20 +147,27 @@ def run_game():
         screen.blit(score_text, (20, 20))
 
         # Word Bomb mode
-        if not game.bomb_word and now - last_bomb_time >= bomb_interval:
-            game.pick_random_unfound_word()
-            last_bomb_time = now
+        if game.mode == "Word Bomb":
+            if not game.bomb_word and now - last_bomb_time >= bomb_interval:
+                game.pick_random_unfound_word()
+                last_bomb_time = now
 
-        if game.bomb_word:
-            new_now = pygame.time.get_ticks()  # Ensure you get this in the same place
-            time_left = max(0, 10 - (new_now - game.bomb_start_time) // 1000)
+            if game.bomb_word:
+                new_now = pygame.time.get_ticks()  # Ensure you get this in the same place
+                time_left = max(0, 10 - (new_now - game.bomb_start_time) // 1000)
 
-            if time_left == 0:
-                game.handle_bomb_failure()
-                last_bomb_time = new_now
+                if time_left == 0:
+                    game.handle_bomb_failure()
+                    last_bomb_time = new_now
 
-            bomb_text = FONT.render(f"⏳ {time_left}s", True, (255, 0, 0))
-            screen.blit(bomb_text, (screen.get_width() // 2 - 120, screen.get_height() - 40))
+                bomb_text = FONT.render(f"⏳ {time_left}s", True, (255, 0, 0))
+                screen.blit(bomb_text, (screen.get_width() // 2 - 120, screen.get_height() - 40))
+
+        if game.bomb_failed:
+            showGameOver()
+            pygame.display.flip()
+            pygame.time.delay(2000)
+            running = False
 
 
         if game_completed and all(line['progress'] >= 1.0 for line in found_lines):
