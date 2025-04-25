@@ -12,7 +12,7 @@ def run_game():
     CELL_SIZE = 60
     FONT = pygame.font.SysFont('consolas', 28)
     WINDOW_SIZE = 600
-    WORDS = ["CAT", "DOG", "SUN", "SHARK", "ELEPHANT", "TIGER", "BIRD", "LION", "ZEBRA"]
+    WORDS = ["CAT", "DOG", "SUN", "SHARK", "TIGER", "BIRD", "LION", "ZEBRA"]
 
     pygame.display.set_caption("IntelliWord")
     icon = pygame.image.load("icon.png")
@@ -65,6 +65,13 @@ def run_game():
         #             'color': (255, 0, 0),
         #             'opacity': 80
         #          }], CELL_SIZE, GRID_SIZE)
+        
+        # word chain
+        if game.mode == "Word Chain" and game.chain_index < len(game.word_chain):
+            current_word = game.word_chain[game.chain_index]
+            target_text = FONT.render(f"Find this word next: {current_word}", True, (255, 255, 0))
+            screen.blit(target_text, (20, WINDOW_SIZE + 10))
+
 
         bomb_word = game.bomb_word if game.mode == "Word Bomb" else None
 
@@ -137,14 +144,15 @@ def run_game():
         draw_lines(screen, found_lines, CELL_SIZE, GRID_SIZE)
 
         # Timer + Score (Dark UI)
-        elapsed_seconds = (pygame.time.get_ticks() - start_ticks) // 1000
-        timer_text = font.render(f"Time: {elapsed_seconds}s", True, (180, 180, 180))
-        screen.blit(timer_text, (screen.get_width() - 140, 20))
+        if game.mode == "Grid Shuffle":
+            elapsed_seconds = (pygame.time.get_ticks() - start_ticks) // 1000
+            timer_text = font.render(f"Time: {elapsed_seconds}s", True, (180, 180, 180))
+            screen.blit(timer_text, (screen.get_width() - 140, 20))
 
-        human_score = game.get_score("human")
-        ai_score = game.get_score("ai")
-        score_text = font.render(f"You: {human_score}   AI: {ai_score}", True, (180, 180, 180))
-        screen.blit(score_text, (20, 20))
+            human_score = game.get_score("human")
+            ai_score = game.get_score("ai")
+            score_text = font.render(f"You: {human_score}   AI: {ai_score}", True, (180, 180, 180))
+            screen.blit(score_text, (20, 20))
 
         # Word Bomb mode
         if game.mode == "Word Bomb":

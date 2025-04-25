@@ -22,6 +22,11 @@ class Game:
         self.last_bomb_time = time.time()
         self.bomb_failed = False  # NEW: To track if bomb failure should end game
 
+        # word chain
+        if self.mode == "Word Chain":
+            self.word_chain = list(words)  # keep order
+            self.chain_index = 0
+
 
         # Grid Shuffle (optional)
         if self.mode == "Grid Shuffle":
@@ -29,21 +34,29 @@ class Game:
             self.last_shuffle_time = time.time()
 
     def check_and_update_word(self, word, positions):
+        if self.mode == "Word Chain":
+            # Only accept the current expected word
+            if self.chain_index < len(self.word_chain) and word == self.word_chain[self.chain_index]:
+                self.found_words.add(word)
+                self.chain_index += 1
+                self.scores["human"] += 1
+                return True
+            return False
+
         if word in self.words and word not in self.found_words:
             self.found_words.add(word)
-            # Only reshuffle in non-Word Bomb mode
             if self.mode == "Grid Shuffle":
                 self.grid_manager.reshuffle(positions, word)
 
             self.scores["human"] += 1
 
-            # Word Bomb cleared
             if self.mode == "Word Bomb" and self.bomb_word == word:
                 self.bomb_word = None
                 self.bomb_start_time = None
 
             return True
         return False
+
 
     def ai_turn(self):
         for word in self.words - self.found_words:
@@ -68,7 +81,10 @@ class Game:
         return self.scores.get(player.lower(), 0)
 
     def is_game_over(self):
+        if self.mode == "Word Chain":
+            return self.chain_index >= len(self.word_chain)
         return self.words == self.found_words
+
 
     # ---- Word Bomb Methods ----
     def pick_random_unfound_word(self):

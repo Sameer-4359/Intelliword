@@ -6,7 +6,7 @@ def select_difficulty(screen):
     font = pygame.font.SysFont('Arial', 36)
     small_font = pygame.font.SysFont('Arial', 24)
 
-    modes = ["Classic", "Grid Shuffle", "Word Bomb"]
+    modes = ["Classic", "Grid Shuffle", "Word Bomb", "Word Chain"]  # Added Word Chain
     difficulties = [("Easy", 5, 5), ("Medium", 8, 8), ("Hard", 10, 10)]
 
     selected_mode = None
