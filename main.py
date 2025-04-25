@@ -2,6 +2,8 @@ import pygame
 from game import Game
 from ui import draw_grid, draw_word_list, get_cell_under_mouse, get_random_color, draw_lines
 from menu import select_difficulty
+import random
+
 
 def run_game():
     pygame.init()
@@ -16,14 +18,21 @@ def run_game():
     icon = pygame.image.load("icon.png")
     pygame.display.set_icon(icon)
 
+    #bomb
+    time_bomb_icon = pygame.image.load("time-bomb.png")
+    time_bomb_icon = pygame.transform.scale(time_bomb_icon, (24, 24))  # adjust size if needed
+
+
     # Dark mode background
     background = pygame.Surface((WINDOW_SIZE, WINDOW_SIZE + 100))
     background.fill((30, 30, 30))
 
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE + 100))
-    GRID_SIZE, max_word_length = select_difficulty(screen)
+    GRID_SIZE, max_word_length, selected_mode = select_difficulty(screen)
 
-    game = Game(size=GRID_SIZE, words=WORDS)
+
+    game = Game(size=GRID_SIZE, words=WORDS, mode=selected_mode)
+
     start_ticks = pygame.time.get_ticks()
     font = pygame.font.SysFont('consolas', 24)
     overFont = pygame.font.SysFont('consolas', 54, bold=True)
@@ -41,10 +50,37 @@ def run_game():
     ai_timer = pygame.time.get_ticks()
     ai_delay = 6500
 
+    bomb_interval = 5000  # 30 seconds
+    last_bomb_time = pygame.time.get_ticks()
+
     while running:
         screen.blit(background, (0, 0))
         draw_grid(screen, game.grid_manager.grid, CELL_SIZE, FONT)
-        draw_word_list(screen, game.found_words, game.words, FONT, CELL_SIZE, GRID_SIZE, text_color=(200, 200, 200))
+        # if game.bomb_word:
+        #     bomb_path = game.ai.find_word(game.grid_manager.grid, game.bomb_word)
+        #     if bomb_path:
+        #         draw_lines(screen, [{
+        #             'positions': list(bomb_path),
+        #             'progress': 1.0,
+        #             'color': (255, 0, 0),
+        #             'opacity': 80
+        #          }], CELL_SIZE, GRID_SIZE)
+
+        bomb_word = game.bomb_word if game.mode == "Word Bomb" else None
+
+        draw_word_list(
+            screen,
+            game.found_words,
+            game.words,
+            FONT,
+            CELL_SIZE,
+            GRID_SIZE,
+            text_color=(200, 200, 200),
+            bomb_word=bomb_word,
+            bomb_icon=time_bomb_icon if bomb_word else None
+        )
+
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -80,8 +116,9 @@ def run_game():
                         selected_start = selected_end = None
 
         # AI Move
+        # AI Move (only in non-Word Bomb modes)
         now = pygame.time.get_ticks()
-        if not game_completed and now - ai_timer > ai_delay:
+        if not game_completed and game.mode != "Word Bomb" and now - ai_timer > ai_delay:
             ai_word, ai_path = game.ai_turn()
             ai_timer = now
             if ai_word:
@@ -92,6 +129,7 @@ def run_game():
                     'color': get_random_color(),
                     'opacity': 100
                 })
+
 
         if game.is_game_over():
             game_completed = True
@@ -108,6 +146,23 @@ def run_game():
         score_text = font.render(f"You: {human_score}   AI: {ai_score}", True, (180, 180, 180))
         screen.blit(score_text, (20, 20))
 
+        # Word Bomb mode
+        if not game.bomb_word and now - last_bomb_time >= bomb_interval:
+            game.pick_random_unfound_word()
+            last_bomb_time = now
+
+        if game.bomb_word:
+            new_now = pygame.time.get_ticks()  # Ensure you get this in the same place
+            time_left = max(0, 10 - (new_now - game.bomb_start_time) // 1000)
+
+            if time_left == 0:
+                game.handle_bomb_failure()
+                last_bomb_time = new_now
+
+            bomb_text = FONT.render(f"⏳ {time_left}s", True, (255, 0, 0))
+            screen.blit(bomb_text, (screen.get_width() // 2 - 120, screen.get_height() - 40))
+
+
         if game_completed and all(line['progress'] >= 1.0 for line in found_lines):
             showGameOver()
             pygame.display.flip()
@@ -122,6 +177,7 @@ def run_game():
 
         pygame.time.delay(10)
         pygame.display.flip()
+
 
 while 1:
     run_game()

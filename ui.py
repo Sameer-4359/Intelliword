@@ -27,7 +27,7 @@ def draw_grid(screen, grid, cell_size, font):
             text_rect = text.get_rect(center=(x + cell_size // 2, y + cell_size // 2))
             screen.blit(text, text_rect)
 
-def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, text_color=(0, 0, 0)):
+def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, text_color=(0, 0, 0), bomb_word=None, bomb_icon=None):
     x = 10
     y = grid_size * cell_size + 10
     line_height = 30
@@ -39,6 +39,13 @@ def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, t
         word_x = x + (index % words_per_row) * 180
         word_y = y + (index // words_per_row) * line_height
         screen.blit(word_text, (word_x, word_y))
+
+        # If this word is the bomb word, draw the bomb icon next to it
+        if bomb_word == word and bomb_icon:
+            icon_x = word_x + word_text.get_width() + 5
+            icon_y = word_y + (font.get_height() - bomb_icon.get_height()) // 2
+            screen.blit(bomb_icon, (icon_x, icon_y))
+
 
 
 def get_cell_under_mouse(pos, cell_size, grid_size, screen):
