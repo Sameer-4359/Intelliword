@@ -4,6 +4,15 @@ from ui import draw_grid, draw_word_list, get_cell_under_mouse, get_random_color
 from menu import select_difficulty
 import random
 
+def load_words_from_file(filename="words.txt", count=8):
+    try:
+        with open(filename, 'r') as file:
+            all_words = [word.strip().upper() for word in file.readlines() if word.strip()]
+            return random.sample(all_words, min(count, len(all_words)))
+    except FileNotFoundError:
+        print(f"Warning: {filename} not found, using default words")
+        return ["CAT", "DOG", "SUN", "SHARK", "TIGER", "BIRD", "LION", "ZEBRA"]
+
 
 def run_game():
     pygame.init()
@@ -12,7 +21,7 @@ def run_game():
     CELL_SIZE = 60
     FONT = pygame.font.SysFont('consolas', 28)
     WINDOW_SIZE = 600
-    WORDS = ["CAT", "DOG", "SUN", "SHARK", "TIGER", "BIRD", "LION", "ZEBRA"]
+    WORDS = load_words_from_file()
 
     pygame.display.set_caption("IntelliWord")
     icon = pygame.image.load("icon.png")
