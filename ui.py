@@ -1,7 +1,8 @@
 import pygame
 import random
+# from game import game
 
-def draw_grid(screen, grid, cell_size, font):
+def draw_grid(screen, grid, cell_size, font,game=None):
     rows = len(grid)
     cols = len(grid[0])
 
@@ -13,6 +14,14 @@ def draw_grid(screen, grid, cell_size, font):
         for c, letter in enumerate(row):
             x = origin_x + c * cell_size
             y = origin_y + r * cell_size
+
+            # Skip drawing if cell is hidden in Fog of War mode
+            if game and game.mode == "Fog of War" and not game.is_revealed(r, c):
+                # Draw fog (gray semi-transparent square)
+                fog_surface = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
+                fog_surface.fill((100, 100, 100, 200))
+                screen.blit(fog_surface, (x, y))
+                continue
 
             # Draw semi-transparent box
             cell_surface = pygame.Surface((cell_size, cell_size), pygame.SRCALPHA)
@@ -27,7 +36,7 @@ def draw_grid(screen, grid, cell_size, font):
             text_rect = text.get_rect(center=(x + cell_size // 2, y + cell_size // 2))
             screen.blit(text, text_rect)
 
-def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, text_color=(0, 0, 0), bomb_word=None, bomb_icon=None):
+def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, text_color=(0, 0, 0), bomb_word=None, bomb_icon=None, reveal_points=None):
     x = 10
     y = grid_size * cell_size + 10
     line_height = 30
@@ -46,6 +55,11 @@ def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, t
             icon_y = word_y + (font.get_height() - bomb_icon.get_height()) // 2
             screen.blit(bomb_icon, (icon_x, icon_y))
 
+        # reveal points of fog of war
+        if reveal_points is not None:
+            points_text = font.render(f"Reveals: {reveal_points}", True, (255, 255, 255))
+            screen.blit(points_text, (screen.get_width() - 150, grid_size * cell_size + 10))
+
 
 
 def get_cell_under_mouse(pos, cell_size, grid_size, screen):
@@ -61,7 +75,7 @@ def get_cell_under_mouse(pos, cell_size, grid_size, screen):
         return row, col
     return None  # Outside the grid
 
-def draw_lines(screen, found_lines, cell_size, grid_size):
+def draw_lines(screen, found_lines, cell_size, grid_size,game=None):
     ANIMATION_SPEED = 0.05
 
     cols = grid_size
@@ -69,11 +83,16 @@ def draw_lines(screen, found_lines, cell_size, grid_size):
     origin_y = 100 if cols <= 6 else 50
 
     for line in found_lines:
+        # if game and game.mode == "Fog of War":
+        #     line['progress'] = 1.0 
         color = line['color']
         positions = line['positions']
         progress = line['progress']
         opacity = line.get('opacity', 130)  # Slightly see-through like a highlighter
 
+        # if game and game.mode == "Fog of War":
+        #     if not all(game.is_revealed(r, c) for (r, c) in positions):
+        #         continue
         # Create transparent surface for highlight
         surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 

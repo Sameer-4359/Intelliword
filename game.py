@@ -32,6 +32,14 @@ class Game:
         if self.mode == "Grid Shuffle":
             self.shuffle_interval = 10  # seconds
             self.last_shuffle_time = time.time()
+        
+        # Fog of War variables
+        self.reveal_points = 2  # Starting reveal points
+        self.revealed_cells = set()  # Track revealed positions
+    
+        # Initialize fog for Fog of War mode
+        if self.mode == "Fog of War":
+            self.initialize_fog()
 
     def check_and_update_word(self, word, positions):
         if self.mode == "Word Chain":
@@ -42,6 +50,11 @@ class Game:
                 self.scores["human"] += 1
                 return True
             return False
+        if self.mode == "Fog of War":
+            for (r, c) in positions:
+                if (r, c) not in self.revealed_cells:
+                    print("✘ Can't select hidden cells!")
+                    return False
 
         if word in self.words and word not in self.found_words:
             self.found_words.add(word)
@@ -53,6 +66,10 @@ class Game:
             if self.mode == "Word Bomb" and self.bomb_word == word:
                 self.bomb_word = None
                 self.bomb_start_time = None
+            
+            if self.mode == "Fog of War":
+                self.reveal_points += 1
+                print(f"Word found! +1 reveal point. Total: {self.reveal_points}")
 
             return True
         return False
@@ -109,3 +126,30 @@ class Game:
                 print("🔀 Grid shuffled!")
                 self.grid_manager.shuffle_grid()
                 self.last_shuffle_time = now
+    
+
+    def initialize_fog(self):
+   
+        self.revealed_cells = set()
+
+    def reveal_area(self, center_row, center_col):
+   
+        if self.reveal_points <= 0:
+            return False
+    
+        revealed = False
+        for r in range(max(0, center_row-1), min(self.grid_manager.size, center_row+2)):
+            for c in range(max(0, center_col-1), min(self.grid_manager.size, center_col+2)):
+                if (r, c) not in self.revealed_cells:
+                    self.revealed_cells.add((r, c))
+                    revealed = True
+    
+        if revealed:
+            self.reveal_points -= 1
+        return revealed
+
+# Add this method to check if a position is revealed
+    def is_revealed(self, row, col):
+        if self.mode != "Fog of War":
+            return True
+        return (row, col) in self.revealed_cells

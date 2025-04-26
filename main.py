@@ -55,16 +55,8 @@ def run_game():
 
     while running:
         screen.blit(background, (0, 0))
-        draw_grid(screen, game.grid_manager.grid, CELL_SIZE, FONT)
-        # if game.bomb_word:
-        #     bomb_path = game.ai.find_word(game.grid_manager.grid, game.bomb_word)
-        #     if bomb_path:
-        #         draw_lines(screen, [{
-        #             'positions': list(bomb_path),
-        #             'progress': 1.0,
-        #             'color': (255, 0, 0),
-        #             'opacity': 80
-        #          }], CELL_SIZE, GRID_SIZE)
+        draw_grid(screen, game.grid_manager.grid, CELL_SIZE, FONT, game)
+       
         
         # word chain
         if game.mode == "Word Chain" and game.chain_index < len(game.word_chain):
@@ -84,7 +76,8 @@ def run_game():
             GRID_SIZE,
             text_color=(200, 200, 200),
             bomb_word=bomb_word,
-            bomb_icon=time_bomb_icon if bomb_word else None
+            bomb_icon=time_bomb_icon if bomb_word else None,
+            reveal_points=game.reveal_points if game.mode == "Fog of War" else None
         )
 
 
@@ -97,7 +90,14 @@ def run_game():
                 pos = pygame.mouse.get_pos()
                 result = get_cell_under_mouse(pos, CELL_SIZE, GRID_SIZE, screen)
                 if result:
-                    selected_start = result
+                    row, col = result
+                    if game.mode == "Fog of War":
+                        if game.reveal_area(row, col):
+                            print(f"Revealed area around ({row}, {col}). Reveals left: {game.reveal_points}")
+                        elif (row, col) in game.revealed_cells:
+                            selected_start = result
+                    else:
+                        selected_start = result
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
@@ -107,19 +107,24 @@ def run_game():
 
                     if selected_start and selected_end:
                         word, positions = game.grid_manager.get_word_from_coords(
-                            selected_start, selected_end
+                            selected_start, selected_end, game
                         )
-                        if game.check_and_update_word(word, positions):
-                            print(f"✔ You found: {word}")
-                            positions = list(positions)
-                            found_lines.append({
-                                'positions': positions,
-                                'progress': 0.0,
-                                'color': get_random_color(),
-                                'opacity': 150
-                            })
-                        else:
-                            print("✘ Not a valid word.")
+                        # Only proceed if we got a valid word and positions
+                        if word and positions:
+                            if game.check_and_update_word(word, positions):
+                                print(f"✔ You found: {word}")
+                                # Add all positions to revealed cells in Fog of War mode
+                                if game.mode == "Fog of War":
+                                    for pos in positions:
+                                        game.revealed_cells.add(pos)
+                                found_lines.append({
+                                    'positions': list(positions),
+                                    'progress': 0.0,
+                                    'color': get_random_color(),
+                                    'opacity': 150
+                                })
+                            else:
+                                print("✘ Not a valid word.")
                         selected_start = selected_end = None
 
         # AI Move
@@ -141,7 +146,7 @@ def run_game():
         if game.is_game_over():
             game_completed = True
 
-        draw_lines(screen, found_lines, CELL_SIZE, GRID_SIZE)
+        draw_lines(screen, found_lines, CELL_SIZE, GRID_SIZE,game)
 
         # Timer + Score (Dark UI)
         if game.mode == "Grid Shuffle":

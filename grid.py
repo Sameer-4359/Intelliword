@@ -68,7 +68,7 @@ class GridManager:
         self.place_words()
         self.fill_random_letters()
 
-    def get_word_from_coords(self, start, end):
+    def get_word_from_coords(self, start, end,game=None):
         sr, sc = start
         er, ec = end
         word = ""
@@ -85,6 +85,8 @@ class GridManager:
             r = sr + dr * i
             c = sc + dc * i
             if not (0 <= r < self.size and 0 <= c < self.size):
+                return "", []
+            if game and game.mode == "Fog of War" and not game.is_revealed(r, c):
                 return "", []
             word += self.grid[r][c]
             positions.append((r, c))
