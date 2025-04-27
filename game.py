@@ -3,6 +3,10 @@ from player import AIPlayer
 import time
 import random
 import pygame
+from pygame import mixer
+
+pygame.init()
+pygame.mixer.init()
 
 class Game:
     def __init__(self, size, words, mode="Classic"):
@@ -83,6 +87,7 @@ class Game:
                 # Only reshuffle if we are in grid shuffle mode
                 if self.mode == "Grid Shuffle":
                     self.grid_manager.reshuffle(set(path), word)
+                    mixer.Sound("music/click.mp3").play()
 
                 self.scores["ai"] += 1
 
@@ -113,6 +118,8 @@ class Game:
     def handle_bomb_failure(self):
         if self.bomb_word:
             print(f"💥 Bomb word missed: {self.bomb_word}")
+            mixer.Sound("music/bomb.mp3").play()
+            pygame.time.delay(2000)  # Wait for 2 seconds before continuing
             self.found_words.add(self.bomb_word)
             self.bomb_word = None
             self.bomb_start_time = None
@@ -124,6 +131,7 @@ class Game:
             now = time.time()
             if now - self.last_shuffle_time >= self.shuffle_interval:
                 print("🔀 Grid shuffled!")
+                mixer.Sound("music/shuffle.mp3").play()
                 self.grid_manager.shuffle_grid()
                 self.last_shuffle_time = now
     
