@@ -69,8 +69,9 @@ def draw_word_list(screen, found_words, all_words, font, cell_size, grid_size, t
         # reveal points of fog of war
         if reveal_points is not None:
             points_text = font.render(f"Reveals: {reveal_points}", True, (255, 255, 255))
-            screen.blit(points_text, (screen.get_width() - 150, grid_size * cell_size + 10))
-    
+            screen.blit(points_text, (x-60, y + line_height * (len(all_words) // words_per_row + 1)))
+            
+
     if chain_word is not None:
         chain_text = font.render(f"Chain Word: {chain_word}", True, (255, 255, 255))
         screen.blit(chain_text, (x-60, y + line_height * (len(all_words) // words_per_row + 1)))

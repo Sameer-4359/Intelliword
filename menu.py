@@ -10,8 +10,6 @@ x = 100
 y = 100
 
 def select_difficulty(screen):
-    
-    
     menu = pygame.image.load("images/menu.png")
     newsize = (WINDOW_SIZE,WINDOW_SIZE-400)
     menu = pygame.transform.scale(menu, newsize)

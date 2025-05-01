@@ -25,7 +25,7 @@ def run_game():
     FONT = pygame.font.SysFont('consolas', 28)
     big_font = pygame.font.SysFont('Arial', 80, bold=True)
     WINDOW_SIZE = 1200
-    WORDS = load_words_from_file()
+    # WORDS = load_words_from_file()
 
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE -400))
 
@@ -42,16 +42,14 @@ def run_game():
     background = pygame.image.load("images/background.png")
     newsize = (WINDOW_SIZE,WINDOW_SIZE-400)
     background = pygame.transform.scale(background, newsize)  
-      
-     
+
 
     #bomb
     time_bomb_icon = pygame.image.load("images/time-bomb.png")
     time_bomb_icon = pygame.transform.scale(time_bomb_icon, (24, 24))  # adjust size if needed
     
     GRID_SIZE, max_word_length, selected_mode = select_difficulty(screen)
-    
-
+    WORDS = load_words_from_file("words.txt",max_word_length)
     game = Game(size=GRID_SIZE, words=WORDS, mode=selected_mode)
     start_ticks = pygame.time.get_ticks()
     font = pygame.font.SysFont('consolas', 24)

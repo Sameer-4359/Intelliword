@@ -1,1 +1,0 @@
-pygame.time.delay(10)
