@@ -211,7 +211,7 @@ def run_game():
                     last_bomb_time = new_now
 
                 bomb_text = FONT.render(f"⏳ {time_left}s", True, (255, 0, 0))
-                screen.blit(bomb_text, (screen.get_width() // 2 - 120, screen.get_height() - 40))
+                screen.blit(bomb_text, (screen.get_width() -140 , 20))
 
         if  game_completed and game.mode == "Grid Shuffle":
             human_score = game.get_score("human")

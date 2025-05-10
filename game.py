@@ -4,6 +4,7 @@ import time
 import random
 import pygame
 from pygame import mixer
+import math 
 
 pygame.init()
 pygame.mixer.init()
@@ -38,7 +39,7 @@ class Game:
             self.last_shuffle_time = time.time()
         
         # Fog of War variables
-        self.reveal_points = 2  # Starting reveal points
+        self.reveal_points = math.ceil(size/3)  # Starting reveal points
         self.revealed_cells = set()  # Track revealed positions
     
         # Initialize fog for Fog of War mode

@@ -5,11 +5,16 @@ import string
 class GridManager:
     def __init__(self, size, words):
         self.size = size
-        self.words = words
+        self.words = self.sanitize_words(words)
         self.grid = [["*" for _ in range(size)] for _ in range(size)]
-        self.found_positions = set()  # NEW: To store all locked positions
-        self.place_words()
+        self.found_positions = set()
+        self.words = self.place_words()  # Store only successfully placed words
         self.fill_random_letters()
+    
+    def sanitize_words(self, words):
+        filtered = [word.upper() for word in words if len(word) <= self.size]
+        return filtered[:self.size]
+
 
     def print_grid(self):
         for row in self.grid:
@@ -17,7 +22,7 @@ class GridManager:
 
     def place_words(self):
         directions = [(1, 0), (0, 1), (1, 1)]
-        unplaced_words = []
+        placed_words = []
 
         for word in self.words:
             placed = False
@@ -29,21 +34,17 @@ class GridManager:
 
                 if 0 <= end_row < self.size and 0 <= end_col < self.size:
                     positions = [(row + i * dr, col + i * dc) for i in range(len(word))]
-                    # NEW: Check if any of these are found_positions
                     if any(pos in self.found_positions for pos in positions):
                         continue
-
-                    valid = all(self.grid[r][c] in ['*', word[i]]
-                                for i, (r, c) in enumerate(positions))
+                    valid = all(self.grid[r][c] in ['*', word[i]] for i, (r, c) in enumerate(positions))
                     if valid:
                         for i, (r, c) in enumerate(positions):
                             self.grid[r][c] = word[i]
+                        placed_words.append(word)
                         placed = True
                         break
-            if not placed:
-                unplaced_words.append(word)
 
-        return unplaced_words
+        return placed_words
 
     def fill_random_letters(self):
         for r in range(self.size):

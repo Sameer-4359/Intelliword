@@ -11,26 +11,25 @@ y = 100
 
 def select_difficulty(screen):
     menu = pygame.image.load("images/menu.png")
-    newsize = (WINDOW_SIZE,WINDOW_SIZE-400)
+    newsize = (WINDOW_SIZE, WINDOW_SIZE - 400)
     menu = pygame.transform.scale(menu, newsize)
     font = pygame.font.SysFont('Arial', 36)
     small_font = pygame.font.SysFont('Arial', 24)
 
-    modes = ["Classic", "Grid Shuffle", "Word Bomb", "Word Chain", "Fog of War"]  # Added Word Chain
-    difficulties = [("Easy", 5, 5), ("Medium", 8, 8), ("Hard", 10, 10)]
+    modes = ["Classic", "Grid Shuffle", "Word Bomb", "Word Chain", "Fog of War"]
+    difficulties = [("Easy", 6), ("Medium", 8), ("Hard", 10)]
 
     selected_mode = None
     selected_diff = None
 
     while not selected_mode:
-        
         screen.blit(menu, (0, 0))
         title = font.render("Select Game Mode", True, (245, 245, 245))
         screen.blit(title, (x, y))
 
         mode_rects = []
         for i, mode in enumerate(modes):
-            rect = pygame.Rect(x+20, y+y + i*70, 200, 50)
+            rect = pygame.Rect(x + 20, y + y + i * 70, 200, 50)
             mode_rects.append((rect, mode))
             pygame.draw.rect(screen, (58, 159, 241), rect)
             text = small_font.render(mode, True, (245, 245, 245))
@@ -51,11 +50,12 @@ def select_difficulty(screen):
     while not selected_diff:
         screen.blit(menu, (0, 0))
         title = font.render("Select Difficulty", True, (245, 245, 245))
-        screen.blit(title, (x+20, y))
+        screen.blit(title, (x + 20, y))
 
         diff_rects = []
-        for i, (label, grid_size, max_word_len) in enumerate(difficulties):
-            rect = pygame.Rect(x+20, y + y + i*80, 200, 50)
+        for i, (label, grid_size) in enumerate(difficulties):
+            max_word_len = grid_size - 1  # Set max word length < grid size
+            rect = pygame.Rect(x + 20, y + y + i * 80, 200, 50)
             diff_rects.append((rect, grid_size, max_word_len))
             pygame.draw.rect(screen, (58, 159, 241), rect)
             text = small_font.render(label, True, (255, 255, 255))
