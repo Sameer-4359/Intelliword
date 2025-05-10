@@ -176,6 +176,19 @@ def run_game():
 
         draw_lines(screen, found_lines, CELL_SIZE, GRID_SIZE,game)
 
+        if game.mode == "Word Chain" and game_completed:
+            show_victory_screen(screen)
+            pygame.display.flip()
+            end_time = pygame.time.get_ticks() + 1500
+            while pygame.time.get_ticks() < end_time:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        return
+                pygame.time.delay(10)
+            running = False
+
+
         # Timer + Score (Dark UI)
         if game.mode == "Grid Shuffle":
             cols = GRID_SIZE
