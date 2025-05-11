@@ -79,10 +79,10 @@ INTELLIWORD/
 
 ## 🚀 Getting Started
 
-.Make sure Python 3.x is installed on your system.
-.pip install pygame
-.clone this Repository
-.cd Intelliword
+1) Make sure Python 3.x is installed on your system.
+2)pip install pygame
+3)clone this Repository
+4)cd Intelliword (move to this directory in your IDE)
 To start the game , run the file main.py
-.python main.py
+5)python main.py
 
